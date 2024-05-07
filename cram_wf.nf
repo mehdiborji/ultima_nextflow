@@ -1,8 +1,10 @@
 
-
 params.cram_file = "/Users/mborji/ultima/crams/sample_fail.cram"
 
 process INDEX {
+
+    cpus 4
+
     input:
     path input_cram
 
