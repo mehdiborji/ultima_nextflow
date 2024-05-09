@@ -5,7 +5,7 @@ input_cram_ch = Channel.of(params.cram_file)
 
 process INDEX {
 
-    cpus 10
+    cpus 4
 
     input:
     path input_cram
@@ -18,7 +18,7 @@ process INDEX {
 
 process CRAMTOFASTQ {
 
-    cpus 10
+    cpus 4
 
     input:
     path input_cram
@@ -39,21 +39,20 @@ process TRIM_EXTRACT_FASTQ_PAIRS {
     path fastq_chunk
 
     output:
-    path R1_fastq
+    path r1_fastq
 
     script:
-    """
+    $/
     #!/usr/bin/env python
     import pysam
     i = 0
-
     N_read_extract = 100000
 
     timmed_length = 55
 
-    R1 = open(R1_fastq, "w")
+    R1 = open("r1_fastq", "w")
 
-    with pysam.FastxFile(fastq_chunk) as R:
+    with pysam.FastxFile("$fastq_chunk") as R:
         for r in R:
             i += 1
 
@@ -77,14 +76,13 @@ process TRIM_EXTRACT_FASTQ_PAIRS {
                 break
 
     R1.close()
-    
-    """
+    /$
 }
 
 workflow {
 
     index_ch = INDEX(input_cram_ch)
-    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 20000000)
+    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 200000)
     read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS(fastq_chunks_ch.flatten())
 
 }
