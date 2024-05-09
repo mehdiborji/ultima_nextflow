@@ -33,6 +33,8 @@ process CONVERTTOUPPER {
     import pysam
     import edlib
     print(pysam.__version__)
+    edit = edlib.align("ACGTACGT", "ACGTAACGT")
+    print(edit)
     with open("$y") as f:
         print(f.read().upper(), end="")
     """
