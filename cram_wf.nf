@@ -4,7 +4,6 @@ params.cram_file = "/Users/mborji/ultima/crams/sample_fail.cram"
 input_cram_ch = Channel.of(params.cram_file)
 
 process INDEX {
-
     cpus 4
 
     input:
@@ -17,7 +16,6 @@ process INDEX {
 }
 
 process CRAMTOFASTQ {
-
     cpus 8
 
     input:
@@ -34,7 +32,6 @@ process CRAMTOFASTQ {
 }
 
 process EXTRACT_TRIMMED_FASTQ_PAIRS {
-
     input:
     path fastq_chunk
 
@@ -53,11 +50,9 @@ process EXTRACT_TRIMMED_FASTQ_PAIRS {
     import cram_utils
     cram_utils.extract_trimmed_fastq_pairs("$fastq_chunk", "read_1.fastq", "read_2.fastq")
     """
-
 }
 
 process COUNT_READS {
-
     input:
     path('read_*.fastq', arity: '2')
 
@@ -70,15 +65,12 @@ process COUNT_READS {
     echo "Counting read2"
     samtools view -c read_2.fastq
     """
-
 }
 
 workflow {
-
     //index_ch = INDEX(input_cram_ch)
     fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 4000000)
     read_pairs_ch = EXTRACT_TRIMMED_FASTQ_PAIRS(fastq_chunks_ch.flatten())
     outcounts = COUNT_READS(read_pairs_ch)
     outcounts.view { it }
-
 }
