@@ -16,6 +16,7 @@ const_3prime_full_forward = "TCAGACGTGTGCTCTTCCGATCT"  # right
 const_3prime_full_reverse = "AGATCGGAAGAGCACACGTCTGA"  # right
 const_5prime_full_forward = "CTACACGACGCTCTTCCGATCT"  # left
 
+print(const_3prime_full_forward)
 right_const = const_3prime_full_reverse[:20]
 left_const = const_5prime_full_forward[-20:]
 
@@ -32,7 +33,7 @@ def extract_trimmed_fastq_pairs(ultima_fastq, R1_fastq, R2_fastq):
     R2 = open(R2_fastq, "w")
 
     with pysam.FastxFile(ultima_fastq) as R:
-        for r in tqdm(R):
+        for r in R:
             i += 1
 
             seq = r.sequence
