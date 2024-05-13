@@ -18,7 +18,7 @@ process INDEX {
 
 process CRAMTOFASTQ {
 
-    cpus 4
+    cpus 8
 
     input:
     path input_cram
@@ -33,8 +33,7 @@ process CRAMTOFASTQ {
     """
 }
 
-
-process TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN {
+process EXTRACT_TRIMMED_FASTQ_PAIRS {
 
     input:
     path fastq_chunk
@@ -45,30 +44,14 @@ process TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN {
     script:
     """
     #!/usr/bin/env python
-
     import sys
     import os
-    bin_path = os.path.abspath('../../../bin')
-    print(bin_path)
+
+    bin_path = os.path.abspath("$projectDir/bin")
     sys.path.append(bin_path)
+
     import cram_utils
     cram_utils.extract_trimmed_fastq_pairs("$fastq_chunk", "read_1.fastq", "read_2.fastq")
-
-    """
-
-}
-
-process TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN_COMMAND {
-
-    input:
-    path fastq_chunk
-
-    output:
-    path('read_*.fastq', arity: '2')
-
-    script:
-    """
-    test.py -i $fastq_chunk -r1 read_1.fastq -r2 read_2.fastq
     """
 
 }
@@ -90,45 +73,12 @@ process COUNT_READS {
 
 }
 
-process ENV_TEST {
-
-    output: stdout
-
-    script:
-    """
-    #!/usr/bin/env python
-    import os
-    print(os.getcwd())
-    import sys
-    bin_path = os.path.abspath('../../../bin')
-
-    print("old_way",bin_path)
-
-    bin_path = os.path.abspath("$projectDir/bin")
-
-    print("new_way",bin_path)
-
-    #sys.path.append(bin_path)
-    #import cram_utils
-    """
-    
-
-}
-
 workflow {
 
     //index_ch = INDEX(input_cram_ch)
-    
-    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 500000)
-    
-    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN(fastq_chunks_ch.flatten())
-
-    read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN_COMMAND(fastq_chunks_ch.flatten())
-    
+    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 4000000)
+    read_pairs_ch = EXTRACT_TRIMMED_FASTQ_PAIRS(fastq_chunks_ch.flatten())
     outcounts = COUNT_READS(read_pairs_ch)
     outcounts.view { it }
-
-    //cwd = ENV_TEST()
-    //cwd.view { it }
 
 }

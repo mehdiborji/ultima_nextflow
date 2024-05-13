@@ -107,8 +107,8 @@ def extract_trimmed_fastq_pairs(ultima_fastq, R1_fastq, R2_fastq):
                     R2.write("+\n")
                     R2.write(f"{r2_qual}\n")
 
-            if i > N_read_extract:
-                break
+            # if i > N_read_extract:
+            #    break
 
     R1.close()
     R2.close()
