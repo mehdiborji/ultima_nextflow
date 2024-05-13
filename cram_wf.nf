@@ -118,16 +118,17 @@ process ENV_TEST {
 workflow {
 
     //index_ch = INDEX(input_cram_ch)
-    //fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 500000)
-    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS(fastq_chunks_ch.flatten())
-    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN(fastq_chunks_ch.flatten())
+    
+    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 500000)
+    read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN(fastq_chunks_ch.flatten())
+
     //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN_COMMAND(fastq_chunks_ch.flatten())
     //read_pairs_ch = TEST_USING_BIN("Hello")
     //read_pairs_ch.view { it }
-    //outcounts = COUNT_READS(read_pairs_ch)
-    //outcounts.view { it }
+    outcounts = COUNT_READS(read_pairs_ch)
+    outcounts.view { it }
 
-    cwd = ENV_TEST()
-    cwd.view { it }
+    //cwd = ENV_TEST()
+    //cwd.view { it }
 
 }
