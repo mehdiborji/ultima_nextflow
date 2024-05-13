@@ -33,56 +33,101 @@ process CRAMTOFASTQ {
     """
 }
 
-process TRIM_EXTRACT_FASTQ_PAIRS {
+
+process TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN {
 
     input:
     path fastq_chunk
 
     output:
-    path r1_fastq
+    path('read_*.fastq', arity: '2')
 
     script:
-    $/
+    """
     #!/usr/bin/env python
-    import pysam
-    i = 0
-    N_read_extract = 100000
 
-    timmed_length = 55
+    import sys
+    import os
+    bin_path = os.path.abspath('../../../bin')
+    print(bin_path)
+    sys.path.append(bin_path)
+    import cram_utils
+    cram_utils.extract_trimmed_fastq_pairs("$fastq_chunk", "read_1.fastq", "read_2.fastq")
 
-    R1 = open("r1_fastq", "w")
+    """
 
-    with pysam.FastxFile("$fastq_chunk") as R:
-        for r in R:
-            i += 1
+}
 
-            seq = r.sequence
-            rlen = len(seq)
+process TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN_COMMAND {
 
-            # reconstruction libraries are in this range
-            if rlen == 155:
+    input:
+    path fastq_chunk
 
-                trim_begin = 20
-                qual = r.quality
-                r1_seq = seq[trim_begin : trim_begin + timmed_length]
-                r1_qual = qual[trim_begin : trim_begin + timmed_length]
+    output:
+    path('read_*.fastq', arity: '2')
 
-                R1.write(f"@{r.name}_1\n")
-                R1.write(f"{r1_seq}\n")
-                R1.write("+\n")
-                R1.write(f"{r1_qual}\n")
-            
-            if i > N_read_extract:
-                break
+    script:
+    """
+    test.py -i $fastq_chunk -r1 read_1.fastq -r2 read_2.fastq
+    """
 
-    R1.close()
-    /$
+}
+
+process COUNT_READS {
+
+    input:
+    path('read_*.fastq', arity: '2')
+
+    output: stdout
+
+    script:
+    """
+    echo "Counting read1"
+    samtools view -c read_1.fastq
+    echo "Counting read2"
+    samtools view -c read_2.fastq
+    """
+
+}
+
+process ENV_TEST {
+
+    output: stdout
+
+    script:
+    """
+    #!/usr/bin/env python
+    import os
+    print(os.getcwd())
+    import sys
+    bin_path = os.path.abspath('../../../bin')
+
+    print("old_way",bin_path)
+
+    bin_path = os.path.abspath("$projectDir/bin")
+
+    print("new_way",bin_path)
+
+    #sys.path.append(bin_path)
+    #import cram_utils
+    """
+    
+
 }
 
 workflow {
 
-    index_ch = INDEX(input_cram_ch)
-    fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 200000)
-    read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS(fastq_chunks_ch.flatten())
+    //index_ch = INDEX(input_cram_ch)
+    //fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 500000)
+    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS(fastq_chunks_ch.flatten())
+    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN(fastq_chunks_ch.flatten())
+    //read_pairs_ch = TRIM_EXTRACT_FASTQ_PAIRS_USING_BIN_COMMAND(fastq_chunks_ch.flatten())
+    //read_pairs_ch = TEST_USING_BIN("Hello")
+    //read_pairs_ch.view { it }
+    //outcounts = COUNT_READS(read_pairs_ch)
+    //outcounts.view { it }
+
+    cwd = ENV_TEST()
+    cwd.view { it }
 
 }
