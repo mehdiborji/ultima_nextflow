@@ -71,6 +71,8 @@ workflow {
     //index_ch = INDEX(input_cram_ch)
     fastq_chunks_ch = CRAMTOFASTQ(input_cram_ch, 4000000)
     read_pairs_ch = EXTRACT_TRIMMED_FASTQ_PAIRS(fastq_chunks_ch.flatten())
-    outcounts = COUNT_READS(read_pairs_ch)
-    outcounts.view { it }
+    //fastq_chunks_ch.view()
+    read_pairs_ch.view()
+    //outcounts = COUNT_READS(read_pairs_ch)
+    //outcounts.view { it }
 }
