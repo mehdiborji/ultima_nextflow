@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
 import pysam
-import os
-import numpy as np
 import pandas as pd
 import edlib
-import subprocess
-import re
 import mappy
 
 UP_seq = "TCTTCAGCGTTCCCGAGA"
